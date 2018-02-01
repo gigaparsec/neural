@@ -21,6 +21,18 @@ end
 averaged = summed/(length(loc)-2);
 figure
 plot(averaged)
+
+summed = zeros(1,51);
+
+for i=1:size(spikes,1)
+    summed = summed+spikes(i,:);
+    plot(spikes(i,:))
+    hold all
+end
+
+figure
+plot(summed/1153)
+
 %%
 % moving average filter
 a = 1;
