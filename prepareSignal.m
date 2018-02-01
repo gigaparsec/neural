@@ -3,6 +3,7 @@
 % This function resamples the signal if the coeff variable is other than
 % one. Generates and returns the resampled signal, new sampling frequency
 % and time and frequency vectors.
+
 function output = prepareSignal(signal,fs,coeff)
 
 if coeff<1

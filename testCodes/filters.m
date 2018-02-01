@@ -1,3 +1,5 @@
+% Author: Jack Tchimino
+
 %% peak detection and averaging
 
 inverted = tenMinSignal*(-1);
