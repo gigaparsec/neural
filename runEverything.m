@@ -21,6 +21,20 @@ prepped = prepareSignal(shortSignal,fs,1);
 
 plot(prepped.TimeVector,prepped.signal)
 
+%% Spike Detection
+
 spikes = detectSpikes(prepped.signal,prepped.SamplingFrequency,25,25,0.25,'down');
 
-% create averaging function
+%% Averaging
+
+averaged = averaging(spikes,'Y');
+
+%% Spectrogram/fourier of the whole waveform/of each spike
+% not sure if spectrogram of each spike is useful:
+%   too few samples
+%   can get better results with simple fft
+% spectrogram better at monitoring transient changes in longer signal(?)
+spectrogram(prepped.signal,6000,2000,'power')
+view(-45,65)
+% use detrend in spectrogram to remove DC offset and spike at 0Hz
+spectrogram(detrend(prepped.signal),600,400,600,fs,'yaxis')
