@@ -63,6 +63,8 @@ view(-45,65)
 %              -test window
 %              -dissimilarity measure
 
+segments = adaptiveSegmentation(prepped.signal,prepped.SamplingFrequency,0.5,100,5,'Y','SEM');
+
 
 
 
