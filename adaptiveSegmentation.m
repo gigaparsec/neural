@@ -15,11 +15,15 @@ function segments = adaptiveSegmentation(signal,fs,threshold,N,P,plotYN,method)
     n0 = N+P;
 
 if strcmp(method,'SEM')==1
+    %step1
     initWindow = signal(n0-N:n0+N);
     ACF = autocorr(initWindow,P);
+    %step2
     temp = iddata(double(initWindow),[],1/fs);
     ARmod = ar(temp,P);
+    %step3
     predError = pe(ARmod,(initWindow),N);
+    predErrACF = autocorr(predError,)
     return;
     
     
