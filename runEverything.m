@@ -32,7 +32,7 @@ clear prompt selection
 clc
 %% get shorter signal
 
-seconds=10;
+seconds=100;
 % numOfSamples = 300*fs;
 % tenMinSignal = signal(1:numOfSamples);
 % tV = [300/numOfSamples:300/numOfSamples:300];
@@ -44,7 +44,12 @@ signal = prepareSignal(shortSignal,fs,1);
 
 plotted = signal.signal;
 plot(signal.TimeVector,plotted)
-hold on
+y1 = get(gca,'ylim');
+x1 = get(gca,'xlim');
+hold all
+plot([50 50],y1);
+plot(x1,[2 2])
+
 plot(signal.TimeVector(1:5:end),plotted(1:5:end))
 
 %% Remove DC offset

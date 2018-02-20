@@ -172,3 +172,47 @@ ylim([-2000,2000])
 figure(3)
 semilogx(frequencyVector,mag2db(abs((fft(detrend(filtered))))))
 xlim([0 15000])
+
+%% code to plot vertical and horizontal lines in the plot
+plot(signal.TimeVector,plotted)
+y1 = get(gca,'ylim');
+x1 = get(gca,'xlim');
+hold all
+plot([50 50],y1);
+plot(x1,[2 2])
+
+%% wavelet plots
+close all
+clc
+figure
+subplot(3,2,1)
+[psi,xval] = wavefun('mexh',10);
+plot(xval,psi,'LineWidth',2); title('Mexican Hat');
+ax = gca;
+ax.FontSize = 14;
+subplot(3,2,2)
+[phi,psi,xval] = wavefun('haar',10);
+plot(xval,psi,'LineWidth',2); title('Daubechies-1 or Haar');
+ax = gca;
+ax.FontSize = 14;
+subplot(3,2,3)
+[phi,psi,xval] = wavefun('db5',10);
+plot(xval,psi,'LineWidth',2); title('Daubechies-5');
+ax = gca;
+ax.FontSize = 14;
+subplot(3,2,4)
+[phi,psi,xval] = wavefun('db40',10);
+plot(xval,psi,'LineWidth',2); title('Daubechies-40');
+ax = gca;
+ax.FontSize = 14;
+subplot(3,2,5)
+[psi,xval] = wavefun('morl',10);
+plot(xval,psi,'LineWidth',2); title('Morlet');
+ax = gca;
+ax.FontSize = 14;
+subplot(3,2,6)
+[psi,xval] = wavefun('gaus1',10);
+plot(xval,psi,'LineWidth',2); title('Gaussian');
+ax = gca;
+ax.FontSize = 14;
+suptitle('\fontsize{20} Mother Wavelet Examples')
