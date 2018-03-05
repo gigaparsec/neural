@@ -92,7 +92,7 @@ if strcmp(method,'SEM')==1
             disp(['Segment found at Sample n=',num2str(n)]);
             seg_num=seg_num+1;
             segments{seg_num}=[init_n n];
-            initWindow = signal(n-N:n+N);
+            initWindow = signal(n-N:n+N); % the reference window is redefined as the last sliding window
             n=n+1;
             flag=0;
         end
