@@ -12,19 +12,87 @@
 
 function segments = adaptiveSegmentation(signal,fs,threshold,N,P,plotYN,method)
 
-    n0 = N+P;
-
+    n = N+P+1;
+    NS = length(signal);
+    predErrACF = zeros(NS,2*P+1);
+    
 if strcmp(method,'SEM')==1
+    init_n=1;
+    seg_num=0;
+%     while n<NS-N-P
     %step1
-    initWindow = signal(n0-N:n0+N);
-    ACF = autocorr(initWindow,P);
-    %step2
-    temp = iddata(double(initWindow),[],1/fs);
-    ARmod = ar(temp,P);
-    %step3
-    predError = pe(ARmod,(initWindow),N);
-    predErrACF = autocorr(predError,)
-    return;
+    
+    initWindow = signal(n-N:n+N);
+    
+    while n<NS-N-P
+        signalACF = xcorr(initWindow,P);
+        %step2
+        temp = iddata(double(initWindow),[],1/fs);
+        ARmod = ar(temp,P);
+        %step3
+        wind = signal(n-N-P:n+N+P);% not n+N
+        predError = pe(ARmod,(wind),N);
+    %     predErrACF(n,:) = xcorr(predError,P); % use instead of eq.8.22
+
+        % eq 8.22
+        m0=P+1;
+        for m=-P:1:P
+            factor = 1/(2*N + 1);
+            temp = 0;
+            disp(['-N=', num2str(-N),', N-m=',num2str(N-m)])
+    %         pause
+            for k=-N:1:N %not N-m
+                disp(['n=',num2str(n),' m=',num2str(m),', k=',num2str(k),', n+k=',num2str(n+k),', n+k+m=',num2str(n+k+m)])
+                temp = temp+ predError(n+k)*predError(n+k+m);
+    %             n+k
+    %             n+k+m
+            end
+            phi_e(n,m0+m) = temp*factor;
+        end
+
+        %step4
+        fixedWindowPhi = phi_e(n,:);
+
+        % begin loop
+        SEM=0;
+        n=n+1;
+        while SEM<threshold && n<NS-N-P
+            movingWindowPhi = zeros(size(fixedWindowPhi));
+            for m=-P:1:P
+                movingWindowPhi(n,m0+m) = phi_e(n-1,m0+m)+predError(n+N)*predError(n+N-m)-predError(n-N-1)*predError(n_N-1-m);
+            end
+            %SEM
+            fac1 = ((fixedWindowPhi(n,m0)/movingWindowPhi(n,m0)) -1)^2;
+    %         fac2 = 
+            summed=0;
+            for k=-P:1:P
+                summed=summed+(movingWindowPhi(n,m0+k)/movingWindowPhi(n,m0))^2;
+            end
+            fac2 = 2*summed;
+            SEM=fac1+fac2;
+            SpectralErrorMeasure(n) = SEM;
+
+            n = n+1;
+
+            if SEM>threshold
+                flag=1;
+            elseif SEM<threshold && n>NS-N-P
+                flag=2;
+            end
+        end
+        if flag==2
+            disp('No further segmentation possible')
+            segments = cell(0);
+            return;
+        elseif flag==1
+            disp(['Segment found at Sample n=',num2str(n)]);
+            seg_num=seg_num+1;
+            seg{seg_num}=[init_n n];
+            initWindow = signal(n-N:n+N);
+            n=n+1;
+            flag=0;
+        end
+    end
     
     
     

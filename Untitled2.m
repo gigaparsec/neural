@@ -1,4 +1,4 @@
-%% 
+ %% 
 close all
 fpar = 100;
 % 
@@ -18,16 +18,18 @@ F2 = 100;
 data = sin(2*pi*F1*t)+sin(2*pi*F2*t);
 
 plot(t,data)
-%% notch for sines
+%% notch for sines WORKS. MAKE FREQ VECTOR IN SINES TO GET A GOOD FREQZ, NOTCH MUST BE VERY NARROW
 
-% nyquist = fs/2;
-% w0 = 100/nyquist;
-% Q=20;
-% bw = w0/Q;
-% [b,a] = iirnotch(w0,bw,20);
-% y = filtfilt(b,a,data);
-% plot(t,data);hold on
-% plot(t,y);
+nyquist = fs/2;
+w0 = 100/nyquist;
+Q=5;
+bw = w0/Q;
+[b,a] = iirnotch(w0,bw,20);
+freqz(b,a)
+y = filtfilt(b,a,data);
+figure
+plot(t,data);hold on
+plot(t,y);
 
 %% notch for data
 close all
@@ -190,29 +192,297 @@ subplot(3,2,1)
 plot(xval,psi,'LineWidth',2); title('Mexican Hat');
 ax = gca;
 ax.FontSize = 14;
+
 subplot(3,2,2)
 [phi,psi,xval] = wavefun('haar',10);
 plot(xval,psi,'LineWidth',2); title('Daubechies-1 or Haar');
+hold on
+plot(xval,phi,'LineWidth',2);
 ax = gca;
 ax.FontSize = 14;
+legend('\psi','\phi')
+
 subplot(3,2,3)
 [phi,psi,xval] = wavefun('db5',10);
 plot(xval,psi,'LineWidth',2); title('Daubechies-5');
+hold on
+plot(xval,phi,'LineWidth',2);
 ax = gca;
 ax.FontSize = 14;
+legend('\psi','\phi')
+
 subplot(3,2,4)
 [phi,psi,xval] = wavefun('db40',10);
 plot(xval,psi,'LineWidth',2); title('Daubechies-40');
+hold on
+plot(xval,phi,'LineWidth',2);
 ax = gca;
 ax.FontSize = 14;
+legend('\psi','\phi')
+
 subplot(3,2,5)
 [psi,xval] = wavefun('morl',10);
 plot(xval,psi,'LineWidth',2); title('Morlet');
 ax = gca;
 ax.FontSize = 14;
+
 subplot(3,2,6)
 [psi,xval] = wavefun('gaus1',10);
 plot(xval,psi,'LineWidth',2); title('Gaussian');
 ax = gca;
 ax.FontSize = 14;
+
 suptitle('\fontsize{20} Mother Wavelet Examples')
+
+%% PCA
+
+pcaMAT = zeros(300000,32);
+
+for i=1:32
+    pcaMAT(:,i) = Channels{i}.signal;
+end
+
+[coeff,score,latent] = pca(pcaMAT);
+
+[eigenvectors, scores] = pca(pcaMAT);
+
+% reconstructedChannels = scores*eigenvectors' + mean of signal
+
+%% segmentation
+
+
+clc
+data = OriginalSignal.signal;
+tV = OriginalSignal.TimeVector;
+fV = OriginalSignal.FrequencyVector;
+fS = OriginalSignal.SamplingFrequency;
+windowLength = ceil(fS/2);
+refWindow = data(1:windowLength);
+
+windowDuration = windowLength/fS;
+
+windowTimeVector = 0:windowDuration/windowLength:windowDuration;
+
+frequencyVector = 0:1/windowDuration:fs;
+
+refPer = periodogram(refWindow);%,windowLength,frequencyVector,fS);
+i=1;
+for n = 2:length(data)-windowLength
+    slidWindow = data(n:n+windowLength);
+    slidPer = periodogram(slidWindow);%,windowLength,frequencyVector,fS);
+    num = sum((refPer-slidPer).^2)/(2*pi); % spectral calculation of SEM
+    den = sum((refPer.*slidPer).^2)/(4*pi^2);
+    SEM(n) = num/den;
+    if SEM(n)>400
+        refWindow = slidWindow;
+        refPer = slidPer;
+        ind(i)=n;
+        i=i+1;
+    end
+    
+end
+%%
+data = OriginalSignal.signal;
+tV = OriginalSignal.TimeVector;
+fV = OriginalSignal.FrequencyVector;
+fS = OriginalSignal.SamplingFrequency;
+windowLength = ceil(fS/2);
+refWindow = data(1:windowLength);
+
+windowDuration = windowLength/fS;
+
+windowTimeVector = 0:windowDuration/windowLength:windowDuration;
+
+frequencyVector = 0:1/windowDuration:fs;
+
+refPer = periodogram(refWindow);%,windowLength,frequencyVector,fS);
+i=1;
+n=2;
+clear ind
+%     figure(1)
+%     plot(data)
+%     ax=gca;
+%     set(gcf,'units','normalized','outerposition',[0 0 1 1])
+%     h3=line([1 1],ax.YLim);
+%     h4=line([windowLength windowLength],ax.YLim);
+%     h3.Color='r';
+%     h4.Color='r';
+while n<length(data)-windowLength
+    slidWindow = data(n:n+windowLength);
+%     figure(1)
+%     delete(h1)
+%     delete(h2)
+%     h1=line([n n],ax.YLim);
+%     h2=line([n+windowLength n+windowLength],ax.YLim);
+    slidPer = periodogram(slidWindow);%,windowLength,frequencyVector,fS);
+    num = sum((refPer-slidPer).^2)/(2*pi); % spectral calculation of SEM
+    den = sum((refPer.*slidPer).^2)/(4*pi^2);
+    SEM(n) = num/den;
+    if SEM(n)>200
+        refWindow = data(n+windowLength:n+2*windowLength);
+        refPer = periodogram(refWindow);
+        ind(i) = n+windowLength;
+        i=i+1;
+        n=n+windowLength+1;
+        disp('segment');
+%         figure(1)
+%         h3=line([n+windowLength n+windowLength],ax.YLim);
+%         h4=line([n+2*windowLength n+2*windowLength],ax.YLim);
+%         h3.Color='r';
+%         h4.Color='r';
+    else
+        n=n+1;
+    end
+    
+end
+
+
+plot(tV(76:end),SEM)
+%% SEM segmentation, time domain approach
+
+data = OriginalSignal.signal;
+tV = OriginalSignal.TimeVector;
+fV = OriginalSignal.FrequencyVector;
+fS = OriginalSignal.SamplingFrequency;
+windowLength = ceil(fS/2);
+refWindow = data(1:windowLength);
+
+windowDuration = windowLength/fS;
+
+windowTimeVector = 0:windowDuration/windowLength:windowDuration;
+
+windowFrequencyVector = 0:1/windowDuration:fs;
+
+refPer = periodogram(refWindow);%,windowLength,frequencyVector,fS);
+refWinACF = autocorr(refWindow);
+n=2;
+while n<length(data)-windowLength
+    slidWindow = data(n:n+windowLength);
+    slidWinACF = autocorr(slidWindow);
+    num = sum((slidWinACF-refWinACF)^2);
+%     den = 
+end
+%%
+% test
+times=0;
+n=0;
+while n<10
+    n=n+1;
+    times=times+1;
+    if n==3
+        n=7;
+    end
+end
+% implement SEM
+%%
+% acf
+
+N = length(slidWindow);
+r_s = zeros(1,N);
+temp=0;
+for k = 1:N
+    for n=1:N-k
+    temp=temp+slidWindow(n+k)*slidWindow(n);
+    end
+    r_s(k)=temp/N;
+end
+% implement ACF, not sure this is right
+r_r = zeros(1,N);
+temp=0;
+for k = 1:N
+    for n=1:N-k
+    temp=temp+refWindow(n+k)*refWindow(n);
+    end
+    r_r(k)=temp/N;
+end
+
+plot(r_r)
+hold on
+plot(r_s,'r')
+
+[r_s2,lagsrs] = xcorr(slidWindow,slidWindow);
+[r_r2,lagsrr] = xcorr(refWindow,refWindow);
+
+figure
+plot(r_r2)
+hold on
+plot(r_s2,'r')
+
+%%
+% data = OriginalSignal.signal;
+% tV = OriginalSignal.TimeVector;
+% fV = OriginalSignal.FrequencyVector;
+% fS = OriginalSignal.SamplingFrequency;
+
+data = clean.signal;
+tV = clean.TimeVector;
+fV = clean.FrequencyVector;
+fS = clean.SamplingFrequency;
+windowLength = ceil(fS/2);
+refWindow = data(1:windowLength+1);
+
+windowDuration = windowLength/fS;
+
+windowTimeVector = 0:windowDuration/windowLength:windowDuration;
+
+frequencyVector = 0:1/windowDuration:fs;
+
+refACF = xcorr(refWindow,refWindow);
+i=1;
+n=2;
+clear ind
+k0 = ceil(length(refACF)/2);
+while n<length(data)-windowLength
+    slidWindow = data(n:n+windowLength);
+    slidACF = xcorr(slidWindow,slidWindow);
+    num = sum((refACF-slidACF).^2);
+    den = refACF(k0)*slidACF(k0);
+    SEM(n) = num/den;
+    if SEM(n)>200
+        refWindow = data(n+windowLength:n+2*windowLength);
+        refACF = xcorr(refWindow,refWindow);
+        ind(i) = n+windowLength;
+        i=i+1;
+        n=n+windowLength+1;
+        disp('segment');
+    else
+        n=n+1;
+    end
+    
+end
+
+plot(tV(1:end-151),SEM)
+ax=gca;
+for i=1:length(ind)
+    h=line([tV(ind(i)) tV(ind(i))],ax.YLim);
+end
+for j=1:length(seizureTimes)
+    h=line([seizureTimes(j) seizureTimes(j)] , ax.YLim);
+    h.Color='r';
+end
+
+% 
+% length(refACF)
+% length(slidACF)
+% length(refWindow)
+% length(slidWindow)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

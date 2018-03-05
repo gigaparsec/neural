@@ -30,4 +30,4 @@ if isequal(length(frequencyVector),N)==0
     frequencyVector = 0:1/time:fs-1/time;
 end
 
-output = struct('signal',signal,'SamplingFrequency',fs,'TimeVector',timeVector,'FrequencyVector',frequencyVector);
+output = struct('signal',double(signal),'SamplingFrequency',fs,'TimeVector',timeVector,'FrequencyVector',frequencyVector);
