@@ -10,11 +10,15 @@
 % which makes the function generate the plots or not. method can be ACF or
 % SEM. N: number of samples in window
 
-function segments = adaptiveSegmentation(signal,fs,threshold,N,P,plotYN,method)
+function segments = adaptiveSegmentation(data,threshold,N,P,plotYN,method)
+
+    signal = data.signal;
+    fs = data.Samplingfrequency;
+    tV = data.TimeVector;
 
     n = N+P+1;
     NS = length(signal);
-    predErrACF = zeros(NS,2*P+1);
+    phi_e = zeros(NS,2*P+1);
     
 if strcmp(method,'SEM')==1
     init_n=1;
@@ -87,15 +91,39 @@ if strcmp(method,'SEM')==1
         elseif flag==1
             disp(['Segment found at Sample n=',num2str(n)]);
             seg_num=seg_num+1;
-            seg{seg_num}=[init_n n];
+            segments{seg_num}=[init_n n];
             initWindow = signal(n-N:n+N);
             n=n+1;
             flag=0;
         end
     end
     
-    
-    
+    if isempty(segments)==false && strcmp(plotYN,'Y')==1
+        figure
+        subplot(2,1,1)
+        plot(tv,signal)
+        ax=gca;
+        hold all
+        for i=1:length(segments)
+            seg_time = segments{i}(1);
+            h1 = line([seg_time seg_time],ax.YLim);
+            h1.Color='r';
+            uistack(h1);
+        end
+        ylabel('Voltage');
+        subplot(2,1,2)
+        plot(tV,SEM)
+        ax=gca;
+        hold all
+        for i=1:length(segments)
+            seg_time = segments{i}(1);
+            h1 = line([seg_time seg_time],ax.YLim);
+            h1.Color='r';
+            uistack(h1);
+        end
+        ylabel('Spectral Error Measure');xlabel('Time [s]');
+        suptitle('Segmentation with Spectral Error Measure')
+    end
 elseif strcmp(method,'ACF')==1
         
 else

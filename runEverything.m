@@ -210,7 +210,7 @@ suptitle('\fontsize{20}Spectrogram of epileptic neural signal')
 %              -test window
 %              -dissimilarity measure
 
-segments = adaptiveSegmentation(clean.signal,clean.SamplingFrequency,0.5,100,10,'Y','SEM');
+segments = adaptiveSegmentation(clean,0.5,100,10,'Y','SEM');
 
 
 
