@@ -34,16 +34,44 @@ plot(t,y);
 %% notch for data
 close all
 
-nyquist = fs/2;
-filtered=sig;
-for i=1:200
-    fc = i*50;
-    w0 = fc/nyquist;
-    Q=5;
-    bw = w0/Q;
-    [b,a] = iirnotch(w0,bw,Q);
-    filtered = filtfilt(b,a,filtered);
-end
+
+fs1=signal1.SamplingFrequency;
+fV1 = signal1.FrequencyVector;
+nyquist1 = fs1/2;
+% filtered=sig;
+
+fc = 2000;
+w01 = fc/nyquist1;
+Q=20;
+bw1 = w01/Q;
+[b1,a1] = iirnotch(w01,bw1,Q);
+figure(1)
+freqz(b1,a1,fV1,fs1)
+
+%%%%%
+
+fs2 = signal2.SamplingFrequency;
+fV2 = signal2.FrequencyVector;
+nyquist2 = fs2/2;
+% filtered=sig;
+% 
+% fc = 30;
+w02 = fc/nyquist2;
+% Q=5;
+bw2 = w02/Q;
+[b2,a2] = iirnotch(w02,bw2,Q);
+figure(2)
+freqz(b2,a2,fV2,fs2)
+%%
+% 
+% for i=1:200
+%     fc = i*50;
+%     w0 = fc/nyquist;
+%     Q=5;
+%     bw = w0/Q;
+%     [b,a] = iirnotch(w0,bw,Q);
+%     filtered = filtfilt(b,a,filtered);
+% end
 
 plot(timeVector,sig);
 hold on
@@ -467,22 +495,65 @@ end
 % length(refWindow)
 % length(slidWindow)
 
+%% 
+    bound = ceil(length(clean.signal)/4);
+    maxLag = fs;
+    sigACF = xcorr(clean.signal(1:bound),maxLag);
+    sigACF = sigACF./max(sigACF);
+    plot(-maxLag:1:maxLag,sigACF)
+    
 
+    train = iddata(double(clean.signal),[],1/fs);
+%     temp = double(clean.signal);
+    ARmod = ar(train,50,'Ts',1/fs);
+    
+    valid = iddata(double(clean.signal(bound:end)),[],1/fs);
+    
+    [YH, FIT, X0] = compare(valid,ARmod);
+    compare(valid,ARmod);
+    
+%%
 
+signal1 = removeDC(signal1);
+fsignal1 = filterHF(signal1,1000);
+fn = [100 200 300 400 500 600 700];
+clean = notch(fsignal1,fn,50,'N');
 
+fsignal2 = prepareSignal(clean.signal,clean.SamplingFrequency,2);%fs=15k
+fsignal3 = prepareSignal(clean.signal,clean.SamplingFrequency,10);%fs=3k
+fsignal4 = prepareSignal(clean.signal,clean.SamplingFrequency,30);%fs=1k
 
+%signal,fs,coeff
+figure(1)
+plot(OriginalSignal.TimeVector,OriginalSignal.signal)
+hold all
+plot(fsignal1.TimeVector,fsignal1.signal,'LineWidth',2)
+plot(fsignal2.TimeVector,fsignal2.signal,'LineWidth',2)
+plot(fsignal3.TimeVector,fsignal3.signal,'LineWidth',2)
+plot(fsignal4.TimeVector,fsignal4.signal,'LineWidth',2)
+%%
+figure(2)
+subplot(5,1,1)
+plot(OriginalSignal.TimeVector(1:30000),OriginalSignal.signal(1:30000))
+ylabel({'Original Signal';'f_s=30kHz'})
+set(get(gca,'YLabel'),'Rotation',0,'HorizontalAlignment','right','VerticalAlignment','middle','FontSize',14)
+subplot(5,1,2)
+plot(fsignal1.TimeVector(1:30000),fsignal1.signal(1:30000),'LineWidth',2)
+ylabel({'Filtered Signal';'f_s=30kHz'})
+set(get(gca,'YLabel'),'Rotation',0,'HorizontalAlignment','right','VerticalAlignment','middle','FontSize',14)
+subplot(5,1,3)
+plot(fsignal2.TimeVector(1:15000),fsignal2.signal(1:15000),'LineWidth',2)
+ylabel('f_s = 15kHz')
+set(get(gca,'YLabel'),'Rotation',0,'HorizontalAlignment','right','VerticalAlignment','middle','FontSize',14)
+subplot(5,1,4)
+plot(fsignal3.TimeVector(1:3000),fsignal3.signal(1:3000),'LineWidth',2)
+ylabel('f_s = 3kHz')
+set(get(gca,'YLabel'),'Rotation',0,'HorizontalAlignment','right','VerticalAlignment','middle','FontSize',14)
+subplot(5,1,5)
+plot(fsignal4.TimeVector(1:1000),fsignal4.signal(1:1000),'LineWidth',2)
+ylabel('f_s=1kHz')
+set(get(gca,'YLabel'),'Rotation',0,'HorizontalAlignment','right','VerticalAlignment','middle','FontSize',14)
+xlabel('Time [sec]','FontSize',14)
+suptitle('\fontsize{20} Downsampling of the Neural Recording')
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+%%
