@@ -3,7 +3,7 @@
 %Run everything
 
 %% load cerebellar signal
-clear all
+% clear all
 clc
 prompt = 'input 1 for cerebellar, 2 for epilepsy, 3 for 16/32 channel ephys, 4 for ensemble 32-channel: \n';
 selection = input(prompt);
@@ -16,7 +16,7 @@ if selection==1
     clear RAW S SET TRIG
 elseif selection==2
 % load epilepsy signal
-    load('C:\Users\Jack Tchimino\Dropbox\BME\Thesis\data\seizure data\2011_08_24_TH_THAL_3ch_0008.mat')
+    load('C:\Users\Jack Tchimino\Dropbox\BME\Thesis\data\seizure data\2011_08_24_TH_THAL_3ch_0011.mat') %11-> 7 seizures
     raw = block.segments{1, 1}.analogsignals{1, 1}.signal;
     fs = block.segments{1, 1}.analogsignals{1, 1}.sampling_rate;
     seizureTimes = block.segments{1, 1}.events{1, 1}.times;
@@ -42,7 +42,7 @@ clear prompt selection
 %%
 % get shorter signal
 
-seconds=200;
+seconds=100;
 % numOfSamples = 300*fs;
 % tenMinSignal = signal(1:numOfSamples);
 % tV = [300/numOfSamples:300/numOfSamples:300];
@@ -51,11 +51,19 @@ numOfSamples = ceil(seconds*fs);
 shortSignal = raw(1:numOfSamples+1);
 
 OriginalSignal = prepareSignal(shortSignal,fs,1);
-signal = prepareSignal(shortSignal,fs,1);
-% 
-% figure
-% plotted = OriginalSignal.signal;
-% plot(OriginalSignal.TimeVector,plotted)
+signal1 = prepareSignal(shortSignal,fs,1);
+signal2 = prepareSignal(shortSignal,fs,4);
+signal3 = prepareSignal(shortSignal,fs,10);
+signal4 = prepareSignal(shortSignal,fs,30);
+
+figure(2)
+plotted = OriginalSignal.signal;
+plot(OriginalSignal.TimeVector,plotted)
+ax = gca;
+ax.FontSize=14;
+xlabel('Time [sec]');ylabel('Voltage [mV]')
+title('\fontsize{20}Prefrontal Cortex')
+
 % set(gcf,'units','normalized','outerposition',[0 0 1 1])
 % drawnow;
 % set(get(handle(gcf),'JavaFrame'),'Maximized',1);
@@ -67,8 +75,8 @@ signal = prepareSignal(shortSignal,fs,1);
 % 
 % plot(signal.TimeVector(1:5:end),plotted(1:5:end))
 
-%% Remove DC offset DO THIS AKWAYS
-
+%% Remove DC offset DO THIS ALWAYS
+signal = OriginalSignal;
 signal = removeDC(signal);
 
 %% lowpass
@@ -116,7 +124,7 @@ for i=1:length(fn) uistack(h1); end
 title('Notched')
 suptitle('\fontsize{20}Power Spectrums of Original and Notched Signal')
 %% plot notched
-close all
+% close all
 
 figure
 subplot(2,1,1)
@@ -134,7 +142,7 @@ suptitle('\fontsize{20}Original and notched signal')
 figure
 plot(OriginalSignal.TimeVector,OriginalSignal.signal)
 hold all
-plot(signal.TimeVector,signal.signal)
+plot(signal.TimeVector,fsignal.signal)
 plot(clean.TimeVector,clean.signal)
 xlabel('Time [sec]');ylabel('Voltage [mV]');
 ax=gca;
@@ -179,7 +187,7 @@ suptitle('\fontsize{20}Averaging Demonstration')
 % use detrend in spectrogram to remove DC offset and spike at 0Hz
 % spectrogram(detrend(signal.signal),ceil(0.5*fs),ceil(0.25*fs),ceil(0.5*fs),fs,'yaxis')
 close all
-
+% 
 temp = seizureTimes/60; % seizure times in minutes
 
 figure
@@ -193,24 +201,44 @@ h.Color='r';
 h.LineWidth=2;
 end
 title('\fontsize{20}Spectrogram of epileptic neural signal notched at 50Hz')
-figure
-spectrogram(detrend(OriginalSignal.signal),ceil(1*fs),ceil(0.9*fs),ceil(1*fs),fs,'yaxis')
-view(-45,65)
-ax=gca;
-ax.FontSize = 14;
-for i=1:length(temp)
-h=line([temp(i), temp(i)],[0 0],[-100,0]);
-h.Color='r';
-h.LineWidth=2;
-end
-suptitle('\fontsize{20}Spectrogram of epileptic neural signal')
+% figure
+% spectrogram(detrend(OriginalSignal.signal),ceil(0.01*fs),ceil(0.005*fs),ceil(1*fs),fs,'yaxis')
+% view(-45,65)
+% ax=gca;
+% ax.FontSize = 14;
+% for i=1:length(temp)
+% h=line([temp(i), temp(i)],[0 0],[-100,0]);
+% h.Color='r';
+% h.LineWidth=2;
+% end
+% suptitle('\fontsize{20}Spectrogram of epileptic neural signal')
 
 %% adaptive segmentation
 % must define: -reference window
 %              -test window
 %              -dissimilarity measure
+clc
+segments = adaptiveSegmentation(clean,0.5,100,4,'Y','SEM');
 
-segments = adaptiveSegmentation(clean,0.5,100,10,'Y','SEM');
+%% Segment and spectrogram
+
+fixedSegments = fixedSegmentation(clean,30);
+numOfSegs = length(fixedSegments);
+
+WINDOW = ceil(0.01*fs);
+NOVERLAP = ceil(0.009);
+NFFT = ceil(0.01*fs);
+
+for i=1:numOfSegs
+set(0,'DefaultFigureWindowStyle','docked')
+figure(i)
+spectrogram(detrend(fixedSegments{i}.signal),WINDOW,NOVERLAP,NFFT,fs,'yaxis');
+% xticks(fixedSegments{i}.TimeVector);
+view(-45,65)
+ax=gca;
+ax.FontSize = 14;
+title(['Segment ',num2str(i)])
+end
 
 
 
