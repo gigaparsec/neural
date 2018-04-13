@@ -13,9 +13,9 @@ fs = data.SamplingFrequency;
 fV = data.FrequencyVector;
 tV = data.TimeVector;
 
-rem = mod(tV(end),duration);
+rem = mod(ceil(tV(end)),duration);
 
-numOfSegs = tV(end-rem)/duration;
+numOfSegs = floor(tV(end-rem)/duration);
 
 durationSamples = duration*fs;
 
