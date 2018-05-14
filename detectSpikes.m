@@ -7,13 +7,18 @@
 % spikes will be upward or downward, can take values 'up' or 'down'.
 
 function spikes = detectSpikes(signal,fs,samplesBefore,samplesAfter,threshold,upOrDown)
+
+if strcmp(upOrDown,'down')==0 && strcmp(upOrDown,'up')==0
+    error('type "up" or "down"')
+end
+
 flag=0;
 if strcmp(upOrDown,'down')==1
     signal = -signal;
     flag=1;
 end
 len = length(signal);
-[peak,loc] = findpeaks(signal,'MinPeakHeight',threshold); % loc contains the indices of the most prominent peaks
+[~,loc] = findpeaks(signal,'MinPeakHeight',threshold); % loc contains the indices of the most prominent peaks
 %maybe put minpeakheight as an input variable
 
 % simple averaging (Ragnayyan, Biomedical signal Analysis p.143-4)

@@ -1,10 +1,11 @@
 function cleanSignal = notch(data,freq,Q,plot)
-close all
+% close all
 
 fV = data.FrequencyVector;
 tV = data.TimeVector;
 fs = data.SamplingFrequency;
 signal = data.signal;
+FileDir = data.FilePath;
 
 nyquist = fs/2;
 w0 = freq/nyquist;
@@ -30,7 +31,7 @@ else
 end    
     
     
-cleanSignal = struct('signal',y,'SamplingFrequency',fs,'TimeVector',tV,'FrequencyVector',fV);
+cleanSignal = struct('signal',y,'SamplingFrequency',fs,'TimeVector',tV,'FrequencyVector',fV,'FilePath',FileDir);
 
 % figure
 % plot(t,signal);hold on

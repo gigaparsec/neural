@@ -4,11 +4,11 @@
 % one. Generates and returns the resampled signal, new sampling frequency
 % and time and frequency vectors.
 
-function output = prepareSignal(signal,fs,coeff)
+function output = prepareSignal(signal,fs,coeff,FilePath)
 
 if coeff<1
-    disp("Error: Oversampling not possible (prepareSignal)");
-    return;
+    error("Error: Oversampling not possible (prepareSignal)");
+%     return;
 end
 
 % coeff is the resampling coefficient
@@ -30,4 +30,4 @@ if isequal(length(frequencyVector),N)==0
     frequencyVector = 0:1/time:fs-1/time;
 end
 
-output = struct('signal',double(signal),'SamplingFrequency',fs,'TimeVector',timeVector,'FrequencyVector',frequencyVector);
+output = struct('signal',double(signal),'SamplingFrequency',fs,'TimeVector',timeVector,'FrequencyVector',frequencyVector,'FilePath',FilePath);

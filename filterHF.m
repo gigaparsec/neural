@@ -7,6 +7,7 @@ signal = data.signal;
 timeVector = data.TimeVector;
 frequencyVector = data.FrequencyVector;
 fs = data.SamplingFrequency;
+FileDir = data.FilePath;
 
 WHP = fc/(0.5*fs);
 
@@ -18,4 +19,4 @@ WHP = fc/(0.5*fs);
 % freqz(b,a,frequencyVector,fs)
 
 filtered = filtfilt(b,a,signal);
-filtered = struct('signal',filtered,'SamplingFrequency',fs,'TimeVector',timeVector,'FrequencyVector',frequencyVector);
+filtered = struct('signal',filtered,'SamplingFrequency',fs,'TimeVector',timeVector,'FrequencyVector',frequencyVector,'FilePath',FileDir);

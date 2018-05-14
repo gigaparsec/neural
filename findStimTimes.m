@@ -9,4 +9,8 @@ function refPoints = findStimTimes(data)
     
     [~, refPoints] = findpeaks(data);
     
+    % this is not right. the stimulation is denoted with pulses, the spikes
+    % are only for the oxidation of the electrodes, not to be taken into
+    % consideration in the analysis
+    
 end

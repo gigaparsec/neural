@@ -1,4 +1,4 @@
-sig = clean.signal;
+sig = signal.signal;
 SL = length(sig);
 
 level = 6;
@@ -106,8 +106,12 @@ title('Level 1 Detail Coefficients')
 
 [c,l] = wavedec(sig,6,'db44');
 [c,l] = dwt(sig,'db44');
+coeffCWT = cwt(sig,1:128,'morl');
+coeffDWT = dwt(sig,'db44');
 approx = appcoef(c,l,'db44');
 [cd1,cd2,cd3,cd4,cd5,cd6] = detcoef(c,l,[1 2 3 4 5 6]);
+
+SC = wscalogram('image',coeffCWT,'xdata',sig);
 
 subplot(7,1,1)
 plot(approx)
@@ -146,7 +150,7 @@ approx = appcoef(c,l,'db44');
 [cd1,cd2,cd3,cd4,cd5,cd6] = detcoef(c,l,[1:1:6]);
 
 % plot
-
+figure(1)
 subplot(7,1,1);plot(approx);title('Approximation Coefficients/Level 6 Lowpass coefficients');
 subplot(7,1,2);plot(cd6);title('Level 6 Detail Coefficients')
 subplot(7,1,3)
@@ -175,29 +179,56 @@ X = waverec(c,l,LO_R,HI_R);
 newC = [approx;cd6;zeros(size(cd5));zeros(size(cd4));zeros(size(cd3));zeros(size(cd2));zeros(size(cd1))];
 
 newX = waverec(newC,l,LO_R,HI_R);
-plot(X)
-hold on
-plot(newX)
+% plot(X)
+% hold on
+% plot(newX)
 
 %% MULTIRESOLUTION ANALYSIS
+lev = 6;
+levP1 = lev+1;
+wt = modwt(signal.signal,'db44',lev);
+mra = modwtmra(wt,'db44');
 
-wt = modwt(clean.signal,'haar',4);
-mra = modwtmra(wt,'haar');
-
-figure(1)
-subplot(5,1,1)
+figure(40)
+subplot(levP1,1,1)
 plot(wt(1,:))
 hold all
-for i=2:5
-    subplot(5,1,i)
+for i=2:levP1
+    subplot(levP1,1,i)
     plot(wt(i,:))
 end
 
-figure(2)
-subplot(5,1,1)
+figure(41)
+subplot(levP1,1,1)
 plot(mra(1,:))
 hold all
-for i=2:5
-    subplot(5,1,i)
+for i=2:levP1
+    subplot(levP1,1,i)
     plot(mra(i,:))
 end
+
+
+%% CWT time-frequency
+
+sig = clean.signal;
+fs = clean.SamplingFrequency;
+tV = clean.TimeVector;
+% t = tV(end);
+
+
+% cwt(sig,'bump',fs) % new version of cwt
+% [coeffs, sgram, freqs] = cwt(sig,1:1024,'morl',100,'scal');
+
+% calculate coefficients
+figure(1)
+[coefs,sgram,frequencies] = cwt(sig,1:10,'db45', 1/fs,'scal');
+[coefs,frequencies] = cwt(sig,1:10,'db45',1/fs);
+% [coefs,frequencies] = cwt(dpoaets,2e4,'VoicesPerOctave',16);
+
+% plot scalogram
+figure(2)
+helperCWTTimeFreqPlot(coefs,tV,frequencies,...
+    'surf','CWT of epileptic signal','seconds','Hz')
+view(-45,65)
+
+

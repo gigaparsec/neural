@@ -63,11 +63,11 @@ if strcmp(method,'periodogram')==1
                 movingPoint = movingPoint+1;
                 referenceAdder = referenceAdder + 1;
             elseif Delta1>threshold
-                segmentBoundaries(segmentNum)=movingPoint;
+                segmentBoundaries(segmentNum)=movingPoint; 
                 segmentNum = segmentNum + 1;
-                startPoint = movingPoint;
+                startPoint = movingPoint; % -N???
                 referenceAdder = 0;
-                movingPoint = movingPoint + N;
+                movingPoint = movingPoint + N; % and don't change?
             end
         end  
         segmentBoundaries = nonzeros(segmentBoundaries);
