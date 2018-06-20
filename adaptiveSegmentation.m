@@ -63,7 +63,12 @@ if strcmp(method,'SEM')==1
         movingWindowPhi_e = zeros(size(fixedWindowPhi_e));
         for m=1:1:P+1
 %             movingWindowPhi_e(n0,m) = phi_e(n0-1,m)+predError(n0+N)*predError(n0+N-m)-predError(n0-N-1)*predError(n0-N-1-m);
-            phi_e(n0,m) = phi_e(n0-1,m)+predError(axSt-1+N)*predError(axSt+N-1-m)-predError(axSt-N)*predError(axSt-N-m);
+            a = phi_e(n0-1,m);
+            b = predError(axSt-1+N);
+            c = predError(axSt+N-1-m);
+            d = predError(axSt-N);
+            e = predError(1+axSt-N-m);
+            phi_e(n0,m) = a+b*c-d*e;
         end
         
         fac1 = ((fixedWindowPhi_e(1)/phi_e(n0,1)) -1)^2;
@@ -78,7 +83,7 @@ if strcmp(method,'SEM')==1
         
         if SEM>threshold
                 flag=1;
-            elseif SEM<threshold && n>NS-N-P
+            elseif SEM<threshold && n0>NS-N-P
                 flag=2;
         end
         

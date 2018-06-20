@@ -28,14 +28,27 @@ if strcmp(method,'periodogram')==1
         num = sum((ACFmoving-ACFfixed).^2);
         den = ACFfixed(ceil(end/2))*ACFmoving(ceil(end/2));
         Delta1 = num/den;
-        SEM(i)=Delta1;
-        i=i+1;
+%         SEM(i)=Delta1;
+%         i=i+1;
+%         if Delta1<threshold
+%             movingPoint = movingPoint+1;
+%         elseif Delta1>=threshold
+%             segmentBoundaries(segmentNum)=movingPoint;
+%             segmentNum = segmentNum + 1;
+%             startPoint = movingPoint;
+%         end
+
         if Delta1<threshold
             movingPoint = movingPoint+1;
+            SEM(i)=Delta1;
+            i=i+1;
         elseif Delta1>=threshold
             segmentBoundaries(segmentNum)=movingPoint;
             segmentNum = segmentNum + 1;
             startPoint = movingPoint;
+            i=i+N;
+            SEM(i)=Delta1;
+            i=i+1;
         end
     end
     segmentBoundaries = nonzeros(segmentBoundaries);

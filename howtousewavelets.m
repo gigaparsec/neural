@@ -103,7 +103,7 @@ plot(cd1)
 title('Level 1 Detail Coefficients')
 
 %%
-
+level = fix(log2(length(sig)));
 [c,l] = wavedec(sig,6,'db44');
 [c,l] = dwt(sig,'db44');
 coeffCWT = cwt(sig,1:128,'morl');
@@ -230,5 +230,106 @@ figure(2)
 helperCWTTimeFreqPlot(coefs,tV,frequencies,...
     'surf','CWT of epileptic signal','seconds','Hz')
 view(-45,65)
+
+%%
+
+level = fix(log2(length(sig)));
+
+[c,l] = wavedec(sig,level,'db44');
+
+approx = appcoef(c,l,'db44');
+
+cd = cell(level,1);
+
+for i=1:level
+%     i
+    cd{i} = detcoef(c,l,i);
+    plot(cd{i})
+end
+
+% [cd1, cd2, cd3, cd4, cd5, cd6, cd7, cd8, cd9, cd10, cd11 ,cd12, cd13, cd14, cd15]=...
+%     detcoef(c,l,1:1:15);
+
+
+
+%%
+% NOP = level+2;
+
+NOP = 15;
+figure
+subplot(2,1,1)
+plot(sig)
+subplot(2,1,2)
+plot(approx)
+for i=1:level
+%     subplot(NOP,1,2+i)
+    len = length(cd{level+1-i});
+    tv = 25/len:25/len:25;
+    figure
+    plot(tv,cd{level+1-i})
+    title(['level ',num2str(level+1-i)])
+end
+
+
+%%
+
+[coefs,frequencies] = cwt(sig,1:20,'db44',1/resp.SamplingFrequency);
+
+helperCWTTimeFreqPlot(coefs,resp.TimeVector,frequencies,'surf','test','sec','Hz')
+
+%%
+
+ens = zeros(16,length(responses{1,1}.signal));
+
+for i=1:16
+    ens(i,:)=responses{i,1}.signal;
+end
+
+[U,S,V]=svdecon(ens');
+
+for i=1:size(S,1)
+    Snew = zeros(size(S));
+    Snew(i,i) = S(i,i);
+    figure
+    recon = U*Snew*V';
+    plot(resp.TimeVector,recon(:,1));
+    title(['Eigenvalue #',num2str(i)]);
+end
+
+
+%%
+mu = mean(ens');
+
+[eigenvectors,scores,latent] = pca(ens');
+
+x = scores(:,1:4)*eigenvectors(:,1:4)'+mu;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

@@ -229,6 +229,85 @@ subplot(3,3,9)
 plot(responses_2018_05_09_19_29_57{3,3}.TimeVector,responses_2018_05_09_19_29_57{17,3})
 
 
+%%
+
+responsesNew.Signals = cell(size(responses_2018_05_09_19_29_57));
+
+for i=1:16
+    for j=1:35
+        responsesNew.Signals{i,j} = responses_2018_05_09_19_29_57{i,j}.signal;
+    end
+end
+responsesNew.Signals(17,:) = responses_2018_05_09_19_29_57(17,:);
+
+
+%%
+% make a file for single neuron detection. the filter is simply a highpass
+% at 30Hz, notch at multiples of 50 and 30 and subsampled at 5kHz
+
+responsesSN = cell(17,length(stims));
+disp('Running...')
+
+fn = [30:30:2400, 50:50:2500];
+
+stimNum = length(stims);
+fc_high = 30;
+
+[b,a] = createComb(fn,100,30000);
+
+for i=1:17
+    if i<17
+    Directory = ['C:\Users\Jack Tchimino\Documents\Recordings\2018-05-09_19-29-57\100_CH',num2str(i),'.continuous'];
+    [raw,~,info] = load_open_ephys_data_faster(Directory);
+    fs = info.header.sampleRate;
+    clear info;
+    original = prepareSignal(raw,fs,1,Directory); % create original
+    clear raw Directory
+    
+    
+    filteredAt30 = removeDC(original,fc_high);  %remove DC
+    
+    
+%     notched = customNotch(filteredAt30,fn,100,'N');
+
+    notched = customNotch2(b,a,filteredAt30);
+    
+    for k=1:stimNum
+        response = notched.signal(stims(k)-fs*5:stims(k)+fs*20);
+        responsesSN{i,k} = prepareSignal(response,fs,6,original.FilePath);
+        responsesSN{i,k}.Description = ['HPF @ ',num2str(fc_high),...
+                                       'Notched at [',num2str(fn),'] Hz'];
+    end
+    disp(['File ',num2str(i),' parsed'])
+    else
+        Directory = 'C:\Users\Jack Tchimino\Documents\Recordings\2018-05-09_19-29-57\100_ADC7.continuous';
+        [raw,~,info] = load_open_ephys_data_faster(Directory);
+        fs = info.header.sampleRate;
+        clear info;
+%         stimulation = prepareSignal(raw,fs,1,Directory); % create original
+        for j = 1:length(stims)
+            stimulation_pulse = raw(stims(j)-fs*5:stims(j)+fs*20);
+            responsesSN{i,j} = stimulation_pulse(1:6:end);%prepareSignal(stimulation_pulse,fs,15,Directory);
+        end
+    end
+end
+disp('end');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

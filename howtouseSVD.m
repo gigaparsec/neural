@@ -1,7 +1,7 @@
 %% Create dummy data. noise and some sinusoids in different levels and at different frequencies
 data = zeros(32,30000);
 
-noisy = awgn(data,20);
+noisy = awgn(data,30);
 
 % plot(noisy(1,:));
 
@@ -22,10 +22,10 @@ for i=1:32
 D(i,:) = rand*x5 + rand*x7 + rand*x2 + rand*x9;
 end
 
-D = awgn(0.4*D,20);
+% D = awgn(0.4*D,30);
 
 full = [noisy,D,noisy];
-% plot(full(1,:))
+plot(full(1,:))
 % spectrogram(full(1,:),ceil(1*fs),ceil(0.9*fs),ceil(1*fs),fs,'yaxis')
 % view(-45,65)
 
@@ -41,8 +41,13 @@ lambda = 1;
 Stemp(lambda,lambda) = S(lambda,lambda);
 
 full_partial_reconstr = U*Stemp*V';
+% full_partial_reconstr = U(:,1:lambda)*S(1:lambda,1:lambda)*V(:,1:lambda)';
 
-plot(full_partial_reconstr(2,:))
+plot(full(1,:))
+hold on
+plot(full_partial_reconstr(1,:))
+% figure
+% spectrogram(full_partial_reconstr(1,:),ceil(1*fs),ceil(0.9*fs),ceil(1*fs),fs,'yaxis')
 
 %% PCA
 
