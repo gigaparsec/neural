@@ -45,23 +45,31 @@ clear prompt %selection
 % sig6k = prepareSignal(raw,fs,5);
 % sig3k = prepareSignal(raw,fs,10);
 original = prepareSignal(raw,fs,1,[b,a]);
-makePowerSpectrum(original,'x');
-startTime = 6.458e06;
-endTime = 1.155e07;
-endTime = 6.458e06+160*fs;
-original2 = prepareSignal(original.signal(startTime:endTime),fs,1,original.FilePath);
+% makePowerSpectrum(original,'x');
+% startTime = 6.458e06;
+% endTime = 1.155e07;
+% endTime = 6.458e06+160*fs;
+% original2 = prepareSignal(original.signal(startTime:endTime),fs,1,original.FilePath);
 
 figure
 plot(original.TimeVector,original.signal)
-figure
-plot(sig1k.TimeVector,sig1k.signal)
+% figure
+% plot(sig1k.TimeVector,sig1k.signal)
 
-makePowerSpectrum(original,'x')
-makePowerSpectrum(sig1k,'x')
-original161036_2 = prepareSignal(raw,fs,1,[b,a]);
-sTime = 1.445e7;
-eTime = 1.654e7;
-original3 = prepareSignal(w.*original.signal(sTime:sTime+50*fs),fs,1,[b,a]);
+% makePowerSpectrum(original,'x')
+% makePowerSpectrum(sig1k,'x')
+% original161036_2 = prepareSignal(raw,fs,1,[b,a]);
+% sTime = 1.445e7;
+% eTime = 1.654e7;
+% original3 = prepareSignal(w.*original.signal(sTime:sTime+50*fs),fs,1,[b,a]);
+
+
+figure
+h(1)=subplot(2,1,1);
+plot(original.TimeVector,original.signal)
+h(2)=subplot(2,1,2);
+plot(stim.TimeVector,stim.signal)
+linkaxes(h,'x')
 %%
 % get shorter signal
 
